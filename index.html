@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MBTI 88 題人格測試（非官方）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC",
+          "PingFang HK", "Microsoft JhengHei", sans-serif;
+        background-color: #f3f4f6;
+        color: #111827;
+      }
+
+      .app-root {
+        min-height: 100vh;
+      }
+
+      .app-container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+
+      .app-header {
+        margin-bottom: 16px;
+      }
+
+      .app-header h1 {
+        font-size: 1.8rem;
+        margin: 0 0 8px;
+        color: #111827;
+      }
+
+      .app-subtitle {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #4b5563;
+      }
+
+      .card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 20px 16px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        margin-top: 16px;
+      }
+
+      .progress-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+        color: #374151;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        transition: width 0.2s ease-out;
+        width: 0;
+      }
+
+      .error-text {
+        color: #b91c1c;
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        display: none;
+      }
+
+      .questions-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .question-card {
+        padding: 12px 10px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+      }
+
+      .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+
+      .question-number {
+        font-weight: 600;
+      }
+
+      .question-text {
+        margin: 0 0 8px;
+        font-size: 0.95rem;
+        color: #111827;
+      }
+
+      .options-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .option-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        background-color: #ffffff;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .option-item input {
+        margin: 0;
+      }
+
+      .option-item span {
+        white-space: nowrap;
+      }
+
+      .option-item-active {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+      }
+
+      .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .primary-button,
+      .secondary-button {
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 0.95rem;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.1s ease,
+          background-color 0.1s ease;
+      }
+
+      .primary-button {
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.28);
+      }
+
+      .primary-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
+      }
+
+      .primary-button:disabled {
+        background: #9ca3af;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+
+      .secondary-button {
+        background-color: #e5e7eb;
+        color: #111827;
+      }
+
+      .secondary-button:hover {
+        background-color: #d1d5db;
+        transform: translateY(-1px);
+      }
+
+      .result-card h2 {
+        margin-top: 0;
+        font-size: 1.3rem;
+      }
+
+      .type-code {
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-align: center;
+        margin: 8px 0;
+        color: #111827;
+      }
+
+      .type-short {
+        text-align: center;
+        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 16px;
+      }
+
+      .dimension-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .dimension-item {
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        background-color: #f9fafb;
+      }
+
+      .dimension-title {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+        color: #374151;
+      }
+
+      .dimension-bar {
+        display: flex;
+        width: 100%;
+        height: 18px;
+        border-radius: 999px;
+        overflow: hidden;
+        background-color: #e5e7eb;
+        font-size: 0.75rem;
+      }
+
+      .dimension-bar-left,
+      .dimension-bar-right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        color: #f9fafb;
+      }
+
+      .dimension-bar-left {
+        background-color: #3b82f6;
+      }
+
+      .dimension-bar-right {
+        background-color: #f97316;
+      }
+
+      .dimension-score {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: #4b5563;
+      }
+
+      .type-detail {
+        font-size: 0.9rem;
+        color: #111827;
+      }
+
+      .type-detail p {
+        margin: 6px 0;
+      }
+
+      .result-note {
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: #6b7280;
+      }
+
+      .app-footer {
+        margin-top: 16px;
+        font-size: 0.8rem;
+        color: #6b7280;
+      }
+
+      .app-footer h3 {
+        font-size: 0.9rem;
+        margin: 12px 0 6px;
+        color: #4b5563;
+      }
+
+      .app-footer ul {
+        padding-left: 20px;
+        margin: 4px 0 10px;
+      }
+
+      .app-footer li {
+        margin-bottom: 4px;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 768px) {
+        .card {
+          padding: 16px 12px;
+        }
+
+        .dimension-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .options-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .option-item {
+          width: 100%;
+          justify-content: flex-start;
+        }
+
+        .type-code {
+          font-size: 2rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .app-container {
+          padding: 16px 10px 28px;
+        }
+
+        .app-header h1 {
+          font-size: 1.4rem;
+        }
+
+        .question-card {
+          padding: 10px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-root">
+      <div class="app-container">
+        <header class="app-header">
+          <h1>MBTI 88 題人格測試</h1>
+          <p class="app-subtitle">
+            此測試為非官方自編問卷，只作自我了解與反思之用，並不代表任何專業診斷結果。
+          </p>
+        </header>
+
+        <section class="card">
+          <div class="progress-row">
+            <div>
+              已作答題數：
+              <span id="answered-count">0</span> /
+              <span id="total-count">88</span>
+            </div>
+            <div class="progress-bar">
+              <div id="progress-bar-fill" class="progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <p id="error-text" class="error-text">請先完成所有題目才提交。</p>
+
+          <form id="questions-form" class="questions-form"></form>
+        </section>
+
+        <section
+          id="result-section"
+          class="card result-card"
+          style="display: none"
+        >
+          <h2>你的 MBTI 結果</h2>
+          <div id="type-code" class="type-code"></div>
+          <p id="type-short" class="type-short"></p>
+
+          <div id="dimension-grid" class="dimension-grid"></div>
+
+          <div id="type-detail" class="type-detail"></div>
+
+          <p class="result-note">
+            提示：結果只反映你在作答當下的傾向，並非絕對標籤。可作為自我認識與討論起點。
+          </p>
+        </section>
+
+        <footer class="app-footer">
+          <p>
+            免責聲明：本網站之 88 題題庫與中文人格解析為非官方自編內容，僅根據
+            MBTI 理論框架撰寫，並非由 The Myers-Briggs Company 或任何持牌專業人士
+            所提供之正式心理評估工具。測試結果僅供個人自我了解與反思參考，不應作為
+            臨床診斷、治療建議或重大學業、職涯、醫療決策之唯一依據。
+          </p>
+
+          <h3>參考文獻（References）</h3>
+          <ul>
+            <li>
+              Jung, C. G. (1971). <em>Psychological Types</em>. Princeton
+              University Press.
+            </li>
+            <li>
+              Myers, I. B., McCaulley, M. H., Quenk, N. L., &amp; Hammer, A. L.
+              (1998). <em
+                >MBTI&reg; Manual: A Guide to the Development and Use of the
+                Myers-Briggs Type Indicator&reg;</em
+              >
+              (3rd ed.). Consulting Psychologists Press.
+            </li>
+            <li>
+              The Myers-Briggs Company.
+              <em>The 16 MBTI&reg; Personality Types</em> 及
+              <em>History of the MBTI&reg; Assessment</em>. Official MBTI
+              resources.
+            </li>
+            <li>
+              Woods, R. A. (2022). Myers-Briggs Type Indicator. In
+              <em>StatPearls</em>. StatPearls Publishing.
+            </li>
+            <li>
+              SimplyPsychology. The Myers-Briggs Type Indicator (MBTI).
+              Retrieved from SimplyPsychology.org.
+            </li>
+          </ul>
+
+          <p>
+            本工具可自由修改題目與文案，以配合不同教學、團隊培訓或工作坊需要；如用於
+            專業場合，建議同時參考合資格心理專業人士或相關標準化工具。
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      var QUESTIONS = [
+        { id: 1, text: "在社交場合，你通常主動認識新朋友。", dimension: "EI", direction: "E" },
+        { id: 2, text: "長時間獨處會令你覺得疲倦而非充電。", dimension: "EI", direction: "E" },
+        { id: 3, text: "你較多時間從外界活動而非內心世界獲得能量。", dimension: "EI", direction: "E" },
+        { id: 4, text: "聚會完結後，你往往仍然覺得精神充沛。", dimension: "EI", direction: "E" },
+        { id: 5, text: "面對陌生環境，你傾向先觀察再行動。", dimension: "EI", direction: "I" },
+        { id: 6, text: "比起多人聚會，你更喜歡與一兩個熟悉朋友深入傾談。", dimension: "EI", direction: "I" },
+        { id: 7, text: "有重要決定時，你會想先自己靜靜思考。", dimension: "EI", direction: "I" },
+        { id: 8, text: "你覺得講之前先在腦海整理好內容會比較安心。", dimension: "EI", direction: "I" },
+        { id: 9, text: "在會議中，你較少搶著發言。", dimension: "EI", direction: "I" },
+        { id: 10, text: "同一日安排太多社交活動，會令你覺得消耗。", dimension: "EI", direction: "I" },
+        { id: 11, text: "你享受成為聚會中的焦點人物。", dimension: "EI", direction: "E" },
+        { id: 12, text: "你偏向以即時講出心中所想的方式溝通。", dimension: "EI", direction: "E" },
+        { id: 13, text: "比起打字，你更喜歡直接打電話或面談。", dimension: "EI", direction: "E" },
+        { id: 14, text: "你容易被別人的情緒感染而變得興奮。", dimension: "EI", direction: "E" },
+        { id: 15, text: "當你心情不好時，找人聊天比獨處更能幫助你。", dimension: "EI", direction: "E" },
+        { id: 16, text: "你常常被認為是慢熱的人。", dimension: "EI", direction: "I" },
+        { id: 17, text: "你覺得在公眾場合表現強烈情緒有點尷尬。", dimension: "EI", direction: "I" },
+        { id: 18, text: "你需要刻意預留一個人安靜時間來回復精神。", dimension: "EI", direction: "I" },
+        { id: 19, text: "你傾向先在腦海排練對話才開口。", dimension: "EI", direction: "I" },
+        { id: 20, text: "在新團隊中，你會先聽清楚大家的想法才表達自己。", dimension: "EI", direction: "I" },
+        { id: 21, text: "你對於認識不同類型的人感到非常興奮。", dimension: "EI", direction: "E" },
+        { id: 22, text: "當你一整天都要和人互動時，通常覺得愉快多於疲累。", dimension: "EI", direction: "E" },
+
+        { id: 23, text: "你做決定時，會先看手上具體資料和實際細節。", dimension: "SN", direction: "S" },
+        { id: 24, text: "你較相信親眼看到的證據多於推測。", dimension: "SN", direction: "S" },
+        { id: 25, text: "比起構思未來可能性，你更專注當下要做的事情。", dimension: "SN", direction: "S" },
+        { id: 26, text: "你偏好按步驟指引完成工作。", dimension: "SN", direction: "S" },
+        { id: 27, text: "你容易留意到環境中的細微變化。", dimension: "SN", direction: "S" },
+        { id: 28, text: "想像力豐富的故事比現實經驗更吸引你。", dimension: "SN", direction: "N" },
+        { id: 29, text: "你經常會自動聯想到如果將來可以怎樣就好了。", dimension: "SN", direction: "N" },
+        { id: 30, text: "面對新點子，你會自然想像延伸的可能性和影響。", dimension: "SN", direction: "N" },
+        { id: 31, text: "比起標準做法，你更享受嘗試新方法。", dimension: "SN", direction: "N" },
+        { id: 32, text: "規劃事情時，你會先想大方向而非細節。", dimension: "SN", direction: "N" },
+        { id: 33, text: "你覺得重複做同一件事很快便會感到乏味。", dimension: "SN", direction: "N" },
+        { id: 34, text: "你處理資料時會先整理成整體模式，再看細節。", dimension: "SN", direction: "N" },
+        { id: 35, text: "你較喜歡具體實用的學習內容，例如實際技能。", dimension: "SN", direction: "S" },
+        { id: 36, text: "你認為細心按程序處理事情比創新更重要。", dimension: "SN", direction: "S" },
+        { id: 37, text: "你重視過往經驗，遇事會先想以前是怎樣處理。", dimension: "SN", direction: "S" },
+        { id: 38, text: "當別人只提供大概方向，沒有細節時，你會感到不安。", dimension: "SN", direction: "S" },
+        { id: 39, text: "你經常對為何事情會這樣運作產生好奇。", dimension: "SN", direction: "N" },
+        { id: 40, text: "你喜歡參與需要構思新點子的工作或項目。", dimension: "SN", direction: "N" },
+        { id: 41, text: "你完成具體成果比長時間討論可能性更有滿足感。", dimension: "SN", direction: "S" },
+        { id: 42, text: "面對新技術或新概念，你會主動想像未來應用情景。", dimension: "SN", direction: "N" },
+        { id: 43, text: "你傾向用具體例子去理解抽象概念。", dimension: "SN", direction: "S" },
+        { id: 44, text: "你覺得先有清晰方向再補充細節比較自然。", dimension: "SN", direction: "N" },
+
+        { id: 45, text: "做決定時，你首先考慮客觀原則和公平性。", dimension: "TF", direction: "T" },
+        { id: 46, text: "即使真話會令對方不舒服，你仍傾向直接指出事實。", dimension: "TF", direction: "T" },
+        { id: 47, text: "你較能自然地把個人情緒和工作分開處理。", dimension: "TF", direction: "T" },
+        { id: 48, text: "在討論中，你重視邏輯是否合理多於氣氛是否和諧。", dimension: "TF", direction: "T" },
+        { id: 49, text: "你對批評的接受程度較高，只要內容合理便可以。", dimension: "TF", direction: "T" },
+        { id: 50, text: "當別人需要支持時，你會先聆聽感受再提供建議。", dimension: "TF", direction: "F" },
+        { id: 51, text: "你很容易察覺到別人細微的情緒變化。", dimension: "TF", direction: "F" },
+        { id: 52, text: "為了避免傷害對方感受，你有時會收起真實意見。", dimension: "TF", direction: "F" },
+        { id: 53, text: "你常常站在他人角度思考問題。", dimension: "TF", direction: "F" },
+        { id: 54, text: "當氣氛緊張時，你會主動嘗試緩和。", dimension: "TF", direction: "F" },
+        { id: 55, text: "你認為講道理比講關係更重要。", dimension: "TF", direction: "T" },
+        { id: 56, text: "比起被人喜歡，你更希望被視為有能力。", dimension: "TF", direction: "T" },
+        { id: 57, text: "當你覺得某人做得不好時，很難不指出來。", dimension: "TF", direction: "T" },
+        { id: 58, text: "朋友之間有問題時，你會提出具體改善方案。", dimension: "TF", direction: "T" },
+        { id: 59, text: "你經常擔心自己的說話會否令別人不開心。", dimension: "TF", direction: "F" },
+        { id: 60, text: "你會刻意記住重要日子和細節，讓對方感到被重視。", dimension: "TF", direction: "F" },
+        { id: 61, text: "只要大家相處氣氛良好，你願意在原則上作一些讓步。", dimension: "TF", direction: "F" },
+        { id: 62, text: "你在衝突中往往先關心關係是否受損。", dimension: "TF", direction: "F" },
+        { id: 63, text: "你覺得在工作場合表達太多情緒是不專業的。", dimension: "TF", direction: "T" },
+        { id: 64, text: "你評價一件事情時，會先看是否符合標準及效率。", dimension: "TF", direction: "T" },
+        { id: 65, text: "即使未必有實際建議，你都會先安慰對方。", dimension: "TF", direction: "F" },
+        { id: 66, text: "當你需要拒絕別人時，會花很多時間斟酌說話方式。", dimension: "TF", direction: "F" },
+
+        { id: 67, text: "你喜歡事前有清晰計劃和時間表。", dimension: "JP", direction: "J" },
+        { id: 68, text: "你完成工作通常會早於期限。", dimension: "JP", direction: "J" },
+        { id: 69, text: "當事情突然被改期，你會感到不安。", dimension: "JP", direction: "J" },
+        { id: 70, text: "你習慣把待辦事項列出清單並逐項完成。", dimension: "JP", direction: "J" },
+        { id: 71, text: "你覺得做事要有頭有尾非常重要。", dimension: "JP", direction: "J" },
+        { id: 72, text: "你享受靈活安排，每日的行程可以隨意調整。", dimension: "JP", direction: "P" },
+        { id: 73, text: "你較少使用詳細行事曆，更多是隨當時心情安排。", dimension: "JP", direction: "P" },
+        { id: 74, text: "遇到突發機會時，你樂於即興改變原本計劃。", dimension: "JP", direction: "P" },
+        { id: 75, text: "你覺得保留選擇空間比及早拍板更舒服。", dimension: "JP", direction: "P" },
+        { id: 76, text: "你經常同時處理多件事情，而非一次只專注一件。", dimension: "JP", direction: "P" },
+        { id: 77, text: "收拾房間或整理資料對你來說是理所當然的習慣。", dimension: "JP", direction: "J" },
+        { id: 78, text: "你會為未來幾個月預先訂好重要安排。", dimension: "JP", direction: "J" },
+        { id: 79, text: "面對大型項目，你會把工作拆成多個小步驟。", dimension: "JP", direction: "J" },
+        { id: 80, text: "你傾向按優先次序處理事情，而不是想到甚麼就做甚麼。", dimension: "JP", direction: "J" },
+        { id: 81, text: "你經常把事情拖到最後一刻才完成。", dimension: "JP", direction: "P" },
+        { id: 82, text: "比起完成度，你更重視過程是否有趣及有彈性。", dimension: "JP", direction: "P" },
+        { id: 83, text: "你喜歡保留彈性，以便配合當下靈感或機會。", dimension: "JP", direction: "P" },
+        { id: 84, text: "當別人要求你即時作決定時，你會覺得有壓力。", dimension: "JP", direction: "P" },
+        { id: 85, text: "你對於桌面或工作環境稍為凌亂不太介意。", dimension: "JP", direction: "P" },
+        { id: 86, text: "你會主動督促身邊人按時完成手上的工作。", dimension: "JP", direction: "J" },
+        { id: 87, text: "你認為按時按標準交功課比靈光一閃更重要。", dimension: "JP", direction: "J" },
+        { id: 88, text: "放假時，你較喜歡臨時決定行程，而非預先安排細節。", dimension: "JP", direction: "P" }
+      ];
+
+      var TYPE_DESCRIPTIONS = {
+        ISTJ: {
+          name: "ISTJ 實際守規型",
+          summary: "重視責任與承諾，做事踏實、有系統，喜歡清晰規則和可預期的安排。對細節特別敏感，適合作為團隊中穩定可靠的支柱。",
+          work: "傾向選擇有明確流程和標準的工作，例如會計、行政、審核、品質管理等。喜歡把事情做對、做好，對錯誤容忍度較低。",
+          relationship: "表達關心多數透過實際行動而非花巧言語。可能不太善於即時安慰別人，但會用負責任的方式支持身邊人。",
+          growth: "可以多留意他人感受與彈性空間，學習在完美與務實之間取得平衡，容許自己和別人有試錯的空間。"
+        },
+        ISFJ: {
+          name: "ISFJ 溫柔守護型",
+          summary: "細心體貼，樂於照顧別人需要，記性好，常常默默肩負起照顧與支援角色。重視和諧與安全感。",
+          work: "適合需要耐性與細緻照顧的工作，例如教育、醫護、支援服務、行政協調等。喜歡有實際幫助別人的感覺。",
+          relationship: "善於記住別人的喜好與細節，會用安靜但持續的方式表達關心。對衝突敏感，傾向避免正面衝撞。",
+          growth: "需要學習適時拒絕與表達自己需要，不要把自己放在最後。對改變保持開放，有助減少不必要的壓力。"
+        },
+        INFJ: {
+          name: "INFJ 理想洞察型",
+          summary: "重視內在價值與意義，直覺敏銳，擅長洞察人心與系統背後的模式。常常追求讓世界變得更好。",
+          work: "適合顧問、心理、教育、非營利機構等需要深度思考與人本關懷的領域。喜歡有長遠影響、與使命感相關的工作。",
+          relationship: "對關係認真而投入，重視真誠與深度對話。可能因為過度敏感而容易疲累，需要足夠獨處時間調整自己。",
+          growth: "可以多練習把理想落實為具體可行步驟，並在現實限制中尋找可行的改善方案，而非只停留在內心藍圖。"
+        },
+        INTJ: {
+          name: "INTJ 策略規劃型",
+          summary: "善於從全局角度思考，擅長規劃長期策略與架構。重視效率與邏輯，一般對自己和他人都有較高要求。",
+          work: "適合策略規劃、研究分析、系統設計、管理顧問等需要統整與創新思維的工作。享受解決複雜問題。",
+          relationship: "表達情感較內斂，往往以實際改善、給予建議或設計方案來表達關心。對無效或重複的社交感到乏味。",
+          growth: "可多練習耐心聆聽他人情緒，並接受不同步的節奏。將鋒利的觀察力配合溫和表達，有助建立更穩固的人際關係。"
+        },
+        ISTP: {
+          name: "ISTP 冷靜實作型",
+          summary: "喜歡親手操作與實驗，重視實際效果，多數在壓力情境下仍能保持冷靜。偏好彈性與自由度高的環境。",
+          work: "適合工程、技術維修、系統操作、風險管理、實務顧問等需要動手解決問題的工作。",
+          relationship: "不太喜歡被束縛，重視個人空間。關心多透過實際幫忙而非長篇對話。對過度情緒化的場面較不適應。",
+          growth: "可以刻意多向他人表達內在想法與感受，避免讓人誤會冷漠。學習長期規劃，有助穩定發揮才能。"
+        },
+        ISFP: {
+          name: "ISFP 溫柔藝術型",
+          summary: "性格溫和、感受細膩，對美感與氛圍很敏感。重視個人價值與內在真實感，不喜歡強硬的規範。",
+          work: "適合藝術設計、音樂、手作、服務業、社工等可直接接觸人與美感的工作。喜歡在低壓而有人情味的環境中工作。",
+          relationship: "待人真誠而體貼，喜歡用行動或心思小細節表達愛。遇到衝突時往往選擇沉默或退後。",
+          growth: "可以練習在適當時機清晰表達立場與界線，避免長期壓抑導致突然爆發。同時建立基本的時間與金錢規劃。"
+        },
+        INFP: {
+          name: "INFP 理想浪漫型",
+          summary: "重視真誠與內在價值觀，富有同理心與想像力。往往對自己重視的事情非常投入，但對無意義的事容易失去動力。",
+          work: "適合寫作、創作、輔導、教育、非營利組織等可發揮理想與創意的領域。需要感到工作與個人價值一致。",
+          relationship: "在在乎的人面前會展現溫柔與深情。對衝突敏感，容易把責任往自己身上攬。",
+          growth: "可多練習把內心理念轉化成具體行動，並學習面對現實限制。培養自我界線與實際執行力，有助實現理想。"
+        },
+        INTP: {
+          name: "INTP 概念分析型",
+          summary: "喜愛思考概念與原理，擅長拆解複雜系統，對求知與理解世界運作方式有強烈興趣。",
+          work: "適合研究、數據分析、軟體開發、理工科、策略與架構設計等需要深度思辨的工作。",
+          relationship: "在熟悉的人面前會變得幽默、有創意，但在陌生社交場合比較安靜。可能忽略別人的情緒需要。",
+          growth: "可多留意實際執行與落地，不讓想法只停留在腦中。學習簡化表達方式，讓更多人明白你的洞見。"
+        },
+        ESTP: {
+          name: "ESTP 行動挑戰型",
+          summary: "精力充沛，喜歡直接行動與面對實際挑戰。擅長在變化情境中快速反應，樂於嘗試新事物。",
+          work: "適合業務、市場拓展、現場管理、活動統籌等需要即時應對與靈活處理的工作。",
+          relationship: "相處有趣、直接，不喜歡拖泥帶水。可能較少花時間談論抽象情緒，但會在實際事情上提供幫忙。",
+          growth: "可多留意長期後果與他人感受，避免只看眼前利益。建立基本的計劃與紀律，有助發揮影響力。"
+        },
+        ESFP: {
+          name: "ESFP 熱情表演型",
+          summary: "開朗活潑，喜歡與人互動，重視當下體驗與享受生活。往往能為環境帶來活力與歡樂。",
+          work: "適合服務業、活動策劃、演藝、前線顧客服務等可以即時看到回應的工作。",
+          relationship: "對朋友慷慨而真誠，重視一起玩的氣氛與共同回憶。對沉重或過度理論化的對話較少興趣。",
+          growth: "可以多思考長遠目標與理財規劃，避免只顧當下娛樂。學習面對不愉快情緒，而非一味以玩樂轉移視線。"
+        },
+        ENFP: {
+          name: "ENFP 熱情創意型",
+          summary: "想像力豐富，喜歡探索新點子與可能性。重視個人價值與自由，對人與世界都有強烈好奇心。",
+          work: "適合創意產業、行銷、公關、培訓、顧問、社創等需要創新與人際互動的工作。",
+          relationship: "投入而真誠，容易與人建立連結。亦可能因同時對很多可能性感興趣而感到分心。",
+          growth: "可多練習聚焦與落實，將眾多點子排序與篩選。建立日常習慣與結構，有助穩定發揮才能。"
+        },
+        ENTP: {
+          name: "ENTP 機智辯思型",
+          summary: "喜歡辯論與交流想法，擅長從多角度看事情。對新概念與新系統特別有興趣，享受拆解與改造現有模式。",
+          work: "適合創業、顧問、策略規劃、創新研發、談判等需要快速思考與說服能力的工作。",
+          relationship: "相處時往往幽默風趣，但有時可能因挑戰別人觀點而不自覺地造成壓力。",
+          growth: "可練習分辨何時是討論點子，何時是需要單純支持。長期堅持完成計劃，有助將創意轉化為實際成果。"
+        },
+        ESTJ: {
+          name: "ESTJ 務實領導型",
+          summary: "講求效率與秩序，擅長組織資源與制定規則。遇到混亂情況時會自然站出來管理。",
+          work: "適合管理職、專案負責人、行政領導等需要制度與執行力的角色。",
+          relationship: "對在乎的人會以負責任與實際照顧方式表達愛。可能不太耐煩拖拉或優柔寡斷的情況。",
+          growth: "可多聆聽不同聲音，尤其是較安靜或感性的人。在堅持原則之餘，保留少許彈性，有助建立更穩固團隊。"
+        },
+        ESFJ: {
+          name: "ESFJ 關懷協調型",
+          summary: "熱心照顧人際關係，重視群體和諧與彼此照應。擅長觀察他人需要並主動提供幫助。",
+          work: "適合客戶服務、教育、社工、人力資源、社區工作等重視人際互動與合作的領域。",
+          relationship: "樂於付出與籌備，常常是聚會與團體活動的推動者。對別人評價較敏感。",
+          growth: "可學習區分他人期望與自己真正想要的事，避免過度迎合。適度照顧自己需要，才能長久照顧他人。"
+        },
+        ENFJ: {
+          name: "ENFJ 鼓舞領袖型",
+          summary: "善於理解他人與帶動氣氛，重視集體成長與長遠願景。常常主動承擔責任，推動團隊向前。",
+          work: "適合帶領團隊、教育培訓、顧問、非營利組織、社區發展等需要結合人際與願景的工作。",
+          relationship: "對關係十分投入，有時會為他人付出過多而忽略自己。擅長鼓勵與啟發別人。",
+          growth: "可以學習適時放慢步伐，照顧自己的感受與界線。不需要對所有人的情緒都負責。"
+        },
+        ENTJ: {
+          name: "ENTJ 目標統御型",
+          summary: "強烈目標導向，擅長規劃與整合資源，喜歡掌握方向與推動變革。對效率與成果有高要求。",
+          work: "適合高階管理、創業者、策略總監、專案領袖等需要決策與承擔風險的角色。",
+          relationship: "在關係中較直接，會用實際行動和長遠規劃來表達重視。可能因忙碌而忽略情緒細節。",
+          growth: "可多留意溝通方式與節奏，避免給人過大壓力。學習在追求成果的同時重視過程與人心。"
+        }
+      };
+
+      var OPTIONS = [
+        { value: 1, label: "非常不同意" },
+        { value: 2, label: "有點不同意" },
+        { value: 3, label: "中立" },
+        { value: 4, label: "有點同意" },
+        { value: 5, label: "非常同意" }
+      ];
+
+      var answers = {};
+
+      function calculateResult() {
+        var scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+        for (var i = 0; i < QUESTIONS.length; i++) {
+          var q = QUESTIONS[i];
+          var ans = answers[q.id];
+          if (!ans) continue;
+
+          var key = q.direction;
+          var pair = q.dimension;
+          var other = pair.replace(key, "");
+
+          if (ans >= 4) {
+            scores[key] += 1;
+          } else if (ans <= 2) {
+            scores[other] += 1;
+          }
+        }
+
+        var typeLetters = [];
+        typeLetters.push(scores.E >= scores.I ? "E" : "I");
+        typeLetters.push(scores.S >= scores.N ? "S" : "N");
+        typeLetters.push(scores.T >= scores.F ? "T" : "F");
+        typeLetters.push(scores.J >= scores.P ? "J" : "P");
+
+        return { typeCode: typeLetters.join(""), scores: scores };
+      }
+
+      function getDimensionSummary(scores) {
+        var pairs = [
+          { name: "外向 E / 內向 I", left: "E", right: "I" },
+          { name: "感覺 S / 直覺 N", left: "S", right: "N" },
+          { name: "思考 T / 情感 F", left: "T", right: "F" },
+          { name: "判斷 J / 知覺 P", left: "J", right: "P" }
+        ];
+
+        var result = [];
+        for (var i = 0; i < pairs.length; i++) {
+          var p = pairs[i];
+          var leftScore = scores[p.left];
+          var rightScore = scores[p.right];
+          var total = leftScore + rightScore || 1;
+          result.push({
+            name: p.name,
+            left: p.left,
+            right: p.right,
+            leftScore: leftScore,
+            rightScore: rightScore,
+            leftPercent: Math.round((leftScore / total) * 100),
+            rightPercent: Math.round((rightScore / total) * 100)
+          });
+        }
+        return result;
+      }
+
+      function updateProgress() {
+        var answeredCountSpan = document.getElementById("answered-count");
+        var progressFill = document.getElementById("progress-bar-fill");
+        var total = QUESTIONS.length;
+
+        var answeredCount = 0;
+        for (var i = 0; i < QUESTIONS.length; i++) {
+          if (answers[QUESTIONS[i].id]) answeredCount++;
+        }
+
+        answeredCountSpan.textContent = String(answeredCount);
+        var percent = (answeredCount / total) * 100;
+        progressFill.style.width = percent + "%";
+
+        var submitBtn = document.getElementById("submit-btn");
+        if (submitBtn) submitBtn.disabled = answeredCount !== total;
+      }
+
+      function renderResult(result) {
+        var resultSection = document.getElementById("result-section");
+        var typeCodeEl = document.getElementById("type-code");
+        var typeShortEl = document.getElementById("type-short");
+        var dimensionGrid = document.getElementById("dimension-grid");
+        var typeDetail = document.getElementById("type-detail");
+
+        if (!result) {
+          resultSection.style.display = "none";
+          typeCodeEl.textContent = "";
+          typeShortEl.textContent = "";
+          dimensionGrid.innerHTML = "";
+          typeDetail.innerHTML = "";
+          return;
+        }
+
+        resultSection.style.display = "block";
+
+        var typeCode = result.typeCode;
+        typeCodeEl.textContent = typeCode;
+
+        var typeInfo = TYPE_DESCRIPTIONS[typeCode];
+        if (typeInfo) {
+          typeShortEl.textContent = typeInfo.name;
+        } else {
+          typeShortEl.textContent = "自訂組合";
+        }
+
+        var dimensionSummary = getDimensionSummary(result.scores);
+        dimensionGrid.innerHTML = "";
+        for (var i = 0; i < dimensionSummary.length; i++) {
+          var d = dimensionSummary[i];
+          var item = document.createElement("div");
+          item.className = "dimension-item";
+
+          var title = document.createElement("div");
+          title.className = "dimension-title";
+          title.textContent = d.name;
+
+          var bar = document.createElement("div");
+          bar.className = "dimension-bar";
+
+          var leftDiv = document.createElement("div");
+          leftDiv.className = "dimension-bar-left";
+          leftDiv.style.width = d.leftPercent + "%";
+          leftDiv.innerHTML = "<span>" + d.left + " " + d.leftPercent + "%</span>";
+
+          var rightDiv = document.createElement("div");
+          rightDiv.className = "dimension-bar-right";
+          rightDiv.style.width = d.rightPercent + "%";
+          rightDiv.innerHTML = "<span>" + d.right + " " + d.rightPercent + "%</span>";
+
+          bar.appendChild(leftDiv);
+          bar.appendChild(rightDiv);
+
+          var score = document.createElement("div");
+          score.className = "dimension-score";
+          score.textContent =
+            "分數：" + d.left + " " + d.leftScore + " ／ " + d.right + " " + d.rightScore;
+
+          item.appendChild(title);
+          item.appendChild(bar);
+          item.appendChild(score);
+
+          dimensionGrid.appendChild(item);
+        }
+
+        typeDetail.innerHTML = "";
+        if (typeInfo) {
+          var h3 = document.createElement("h3");
+          h3.textContent = "人格解析";
+          typeDetail.appendChild(h3);
+
+          var p1 = document.createElement("p");
+          p1.innerHTML = "<strong>整體特點：</strong>" + typeInfo.summary;
+          var p2 = document.createElement("p");
+          p2.innerHTML = "<strong>職涯傾向：</strong>" + typeInfo.work;
+          var p3 = document.createElement("p");
+          p3.innerHTML = "<strong>人際風格：</strong>" + typeInfo.relationship;
+          var p4 = document.createElement("p");
+          p4.innerHTML = "<strong>成長建議：</strong>" + typeInfo.growth;
+
+          typeDetail.appendChild(p1);
+          typeDetail.appendChild(p2);
+          typeDetail.appendChild(p3);
+          typeDetail.appendChild(p4);
+        }
+      }
+
+      function resetAll() {
+        answers = {};
+        document.getElementById("error-text").style.display = "none";
+
+        var form = document.getElementById("questions-form");
+        var inputs = form.querySelectorAll("input[type=radio]");
+        for (var i = 0; i < inputs.length; i++) {
+          inputs[i].checked = false;
+        }
+        var items = form.querySelectorAll(".option-item");
+        for (var j = 0; j < items.length; j++) {
+          items[j].classList.remove("option-item-active");
+        }
+
+        updateProgress();
+        renderResult(null);
+      }
+
+      function init() {
+        document.getElementById("total-count").textContent = String(QUESTIONS.length);
+        var form = document.getElementById("questions-form");
+
+        for (var i = 0; i < QUESTIONS.length; i++) {
+          var q = QUESTIONS[i];
+
+          var card = document.createElement("div");
+          card.className = "question-card";
+
+          var header = document.createElement("div");
+          header.className = "question-header";
+
+          var numberSpan = document.createElement("span");
+          numberSpan.className = "question-number";
+          numberSpan.textContent = "第 " + (i + 1) + " 題";
+
+          header.appendChild(numberSpan);
+
+          var textP = document.createElement("p");
+          textP.className = "question-text";
+          textP.textContent = q.text;
+
+          var optionsRow = document.createElement("div");
+          optionsRow.className = "options-row";
+
+          for (var k = 0; k < OPTIONS.length; k++) {
+            (function (opt) {
+              var label = document.createElement("label");
+              label.className = "option-item";
+
+              var input = document.createElement("input");
+              input.type = "radio";
+              input.name = "q-" + q.id;
+              input.value = String(opt.value);
+
+              input.addEventListener("change", function () {
+                answers[q.id] = parseInt(this.value, 10);
+
+                var siblings = optionsRow.querySelectorAll(".option-item");
+                for (var s = 0; s < siblings.length; s++) {
+                  siblings[s].classList.remove("option-item-active");
+                }
+                label.classList.add("option-item-active");
+
+                document.getElementById("error-text").style.display = "none";
+                updateProgress();
+              });
+
+              var span = document.createElement("span");
+              span.textContent = opt.label;
+
+              label.appendChild(input);
+              label.appendChild(span);
+              optionsRow.appendChild(label);
+            })(OPTIONS[k]);
+          }
+
+          card.appendChild(header);
+          card.appendChild(textP);
+          card.appendChild(optionsRow);
+
+          form.appendChild(card);
+        }
+
+        var actions = document.createElement("div");
+        actions.className = "form-actions";
+
+        var submitBtn = document.createElement("button");
+        submitBtn.type = "button";
+        submitBtn.id = "submit-btn";
+        submitBtn.className = "primary-button";
+        submitBtn.textContent = "送出並查看結果";
+        submitBtn.disabled = true;
+
+        submitBtn.addEventListener("click", function () {
+          var answeredCount = 0;
+          for (var i = 0; i < QUESTIONS.length; i++) {
+            if (answers[QUESTIONS[i].id]) answeredCount++;
+          }
+
+          if (answeredCount !== QUESTIONS.length) {
+            document.getElementById("error-text").style.display = "block";
+            return;
+          }
+
+          var result = calculateResult();
+          renderResult(result);
+        });
+
+        var resetBtn = document.createElement("button");
+        resetBtn.type = "button";
+        resetBtn.className = "secondary-button";
+        resetBtn.textContent = "清除作答";
+        resetBtn.addEventListener("click", resetAll);
+
+        actions.appendChild(submitBtn);
+        actions.appendChild(resetBtn);
+        form.appendChild(actions);
+
+        updateProgress();
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
