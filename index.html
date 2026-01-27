@@ -654,7 +654,24 @@
         { value: 5, label: "非常同意" }
       ];
 
+      // 所有答案會存放在此物件，key 為題目 id
       var answers = {};
+
+      // 從畫面上已選中的 radio 重新收集所有答案
+      function collectAnswersFromDOM() {
+        var collected = {};
+        for (var i = 0; i < QUESTIONS.length; i++) {
+          var q = QUESTIONS[i];
+          var name = "q-" + q.id;
+          var checked = document.querySelector(
+            'input[name="' + name + '"]:checked'
+          );
+          if (checked) {
+            collected[q.id] = parseInt(checked.value, 10);
+          }
+        }
+        return collected;
+      }
 
       function calculateResult() {
         var scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
@@ -712,14 +729,14 @@
       }
 
       function updateProgress() {
+        // 每次更新時，由畫面實際勾選狀態重新收集答案
+        answers = collectAnswersFromDOM();
+
         var answeredCountSpan = document.getElementById("answered-count");
         var progressFill = document.getElementById("progress-bar-fill");
         var total = QUESTIONS.length;
 
-        var answeredCount = 0;
-        for (var i = 0; i < QUESTIONS.length; i++) {
-          if (answers[QUESTIONS[i].id]) answeredCount++;
-        }
+        var answeredCount = Object.keys(answers).length;
 
         answeredCountSpan.textContent = String(answeredCount);
         var percent = (answeredCount / total) * 100;
@@ -873,8 +890,6 @@
               input.value = String(opt.value);
 
               input.addEventListener("change", function () {
-                answers[q.id] = parseInt(this.value, 10);
-
                 var siblings = optionsRow.querySelectorAll(".option-item");
                 for (var s = 0; s < siblings.length; s++) {
                   siblings[s].classList.remove("option-item-active");
@@ -912,10 +927,10 @@
         submitBtn.disabled = true;
 
         submitBtn.addEventListener("click", function () {
-          var answeredCount = 0;
-          for (var i = 0; i < QUESTIONS.length; i++) {
-            if (answers[QUESTIONS[i].id]) answeredCount++;
-          }
+          // 提交前再由畫面收集一次答案，確保 answers 同實際狀態一致
+          answers = collectAnswersFromDOM();
+
+          var answeredCount = Object.keys(answers).length;
 
           if (answeredCount !== QUESTIONS.length) {
             document.getElementById("error-text").style.display = "block";
